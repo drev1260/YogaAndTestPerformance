@@ -1,0 +1,72 @@
+#Data analyses and figure creation for Yoga vs. Stress
+##Devinne Fagen & Hillary Coy
+###Introduction
+
+This file was used to analyze data from our YouTube Yoga/Test Performance Experiment. All materials including consent, experimental tasks, and debriefing can be accessed following the previous link and following the links embedded within the video.
+
+These data represent observations from 42 participants who reported participating in existing conditions and emailed us their data. An answer to one of the questions was reported incorrectly on the scoring portion of the video and was excluded from analysis.
+
+The number of variables included in the raw data were Condition, Stress Level, and Test Scores. These data were analyzed and included in the poster and presentation.
+
+###Preparing data for analysis
+
+First we need to read into the data.
+```{r}
+data<-read.csv("Capstone Data.csv")
+```
+Then we need to look at the variables of the data.
+```{r}
+str(data)
+```
+###Primary Analysis
+Now we'll use an ANOVA test to determine whether there was a significant difference in Test Scores between conditions (A vs. B) and Stress Levels (low vs. high).
+```{r}
+summary(aov(Scores~Condition*Stress,data=data))
+```
+There was no significant between test scores of participants and conditions (A vs B) F (1, 38) = .627, p = .434. Neither did we find significance between test scores and stress levels (low vs. high) F (1, 38) = .083, p = .774, nor test scores within conditions (A vs. B) based on stress levels (low vs. high) F(1, 38) = .254, p = .617.
+
+###Figure
+
+```{r}
+library("dplyr")
+library("ggplot2")
+library("gplots")
+datsum<-data%>%group_by(Stress,Condition)%>%
+summarize(means=mean(Scores),sems=sd(Scores)/sqrt(length(Scores)))
+col1=col2hex("deeppink")
+col2=col2hex("deepskyblue2")
+fig<-ggplot(datsum, aes(x=Stress, y=means, fill=Condition))+
+geom_bar(stat="identity",position=position_dodge())+
+scale_fill_manual(values=c(col1,col2),name="condition",breaks=c("A","B"),
+labels=c("Condition A", "Condition B"))+
+theme(legend.key=element_rect(color="black"))+
+geom_errorbar(aes(ymax=means+sems, ymin=means-sems),
+width=.2,position=position_dodge(.9))+
+ggtitle("Test Scores by Condition and Stress Level")+
+labs(x="Stress Level",y="Scores")+
+theme(plot.title=element_text(size=15,face="bold",vjust=.5))+
+theme(axis.title.x=element_text(size=12,face="bold",vjust=-.25))+
+theme(axis.title.y=element_text(size=12,face="bold",vjust=1))+
+theme(axis.text.x=element_text(size=10,face="bold",color="black"))+
+theme(axis.text.y=element_text(size=10,face="bold",color="black"))+
+coord_cartesian(ylim=c(min(datsum$means)-2*max(datsum$sems),
+max(datsum$means)+2*max(datsum$sems)))+
+theme(panel.border=element_blank(),axis.line=element_line())+
+theme(panel.grid.major.x=element_blank())+
+theme(panel.grid.major.y=element_line(color="darkgrey"))+
+theme(panel.grid.minor.y=element_blank())+
+theme(legend.position=c(.8,.76))+
+theme(legend.background=element_blank())+
+theme(legend.background=element_rect(color="black"))+
+theme(legend.title=element_blank())+
+theme(legend.title=element_text(size=12))+
+theme(legend.title.align=.5)+
+theme(legend.text=element_text(size=10,face="bold"))
+fig
+```
+
+According to the bar graph figure there is no significant difference of means scores within each condition for each stress level. This is consistent with the results from the ANOVA analysis.
+
+###Summary
+
+In summary, we found no short-term effects of yoga on test performance in context of a timed math test administered via YouTube. The conditions and stress levels showed no significant differences in test scores.
